@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'
-import secret from '../secret.json'
+import secret from '../secret.json' assert { type: "json" };
 import { sendResponse } from '../utils.js'
 import lightScenes from '../constants/lightScenes.js'
 const deskLights = secret.deskLights
