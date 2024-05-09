@@ -4,7 +4,7 @@ import {
   } from 'discord-interactions';
 import {sendResponse, GetChannelMessages, sendImage} from './utils.js'
 import {getAllAttachments, getEffect, uploadImage} from './helpers/imageTransformations.js'
-import {controlDeskLights} from './helpers/deskControl.js'
+import {controlDeskLights, controlBedLights} from './helpers/deskControl.js'
 export async function commandHandler({res, name: commandName, channel_id, options: args}){
     switch(commandName) {
         case 'image':
@@ -64,6 +64,18 @@ export async function commandHandler({res, name: commandName, channel_id, option
             } else {
                 return sendResponse(res,textResposne)
             }
+            break
+        case 'bed':
+            console.log('BED COMMAND RUNNING', args)
+            const bedAction = args?.[0]?.value
+
+            let bedTextResposne = `✅ Updated Micah\'s Bed Lights to \`${args?.[0]?.value}\``
+            if(bedAction){
+                bedTextResposne = await controlBedLights(bedAction, args, res)
+            } else {
+                return sendResponse(res,bedTextResposne)
+            }
+            break
             // return 'success'
     }
 }

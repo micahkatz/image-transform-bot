@@ -3,15 +3,17 @@ import secret from '../secret.json' assert { type: "json" };
 import { sendResponse } from '../utils.js'
 import lightScenes from '../constants/lightScenes.js'
 const deskLights = secret.deskLights
+const bedLights = secret.bedLights
 
-const setColor = ({ r, g, b }) => {
+const setColor = async(device, { r, g, b }) => {
+    console.log(device)
     var myHeaders = new Headers();
     myHeaders.append("Govee-API-Key", secret['govee-api-key']);
     myHeaders.append("Content-Type", "application/json");
 
     var raw = JSON.stringify({
-        "device": deskLights.mac,
-        "model": deskLights.model,
+        "device": device.mac,
+        "model": device.model,
         "cmd": {
             "name": "color",
             "value": {
@@ -29,16 +31,22 @@ const setColor = ({ r, g, b }) => {
         redirect: 'follow'
     };
 
-    return fetch("https://developer-api.govee.com/v1/devices/control", requestOptions)
+    const response = await fetch("https://developer-api.govee.com/v1/devices/control", requestOptions)
+
+    if(!response.ok){
+        console.log('ERROR WITH SET COLOR', await response.text())
+    }
+
+    return response
 }
-const changePowerState = (shouldTurnOn = true) => {
+const changePowerState = (device, shouldTurnOn = true) => {
     var myHeaders = new Headers();
     myHeaders.append("Govee-API-Key", secret['govee-api-key']);
     myHeaders.append("Content-Type", "application/json");
 
     var raw = JSON.stringify({
-        "device": deskLights.mac,
-        "model": deskLights.model,
+        "device": device.mac,
+        "model": device.model,
         "cmd": {
             "name": "turn",
             "value": shouldTurnOn ? "on" : "off"
@@ -54,14 +62,14 @@ const changePowerState = (shouldTurnOn = true) => {
 
     return fetch("https://developer-api.govee.com/v1/devices/control", requestOptions)
 }
-const setBrightness = (brightness = 50) => {
+const setBrightness = (device, brightness = 50) => {
     var myHeaders = new Headers();
     myHeaders.append("Govee-API-Key", secret['govee-api-key']);
     myHeaders.append("Content-Type", "application/json");
 
     var raw = JSON.stringify({
-        "device": deskLights.mac,
-        "model": deskLights.model,
+        "device": device.mac,
+        "model": device.model,
         "cmd": {
             "name": "brightness",
             "value": brightness
@@ -77,7 +85,7 @@ const setBrightness = (brightness = 50) => {
 
     return fetch("https://developer-api.govee.com/v1/devices/control", requestOptions)
 }
-const setScene = (sceneId) => {
+const setScene = (device, sceneId) => {
     var myHeaders = new Headers();
     myHeaders.append("Govee-API-Key", secret['govee-api-key']);
     myHeaders.append("Content-Type", "application/json");
@@ -86,8 +94,8 @@ const setScene = (sceneId) => {
 
         "requestId": "uuid",
         "payload": {
-            "device": deskLights.mac,
-            "sku": deskLights.model,
+            "device": device.mac,
+            "sku": device.model,
             "capability": {
                 "type": "devices.capabilities.dynamic_scene",
                 "instance": "lightScene",
@@ -105,76 +113,80 @@ const setScene = (sceneId) => {
 
     return fetch("https://openapi.api.govee.com/router/api/v1/device/control", requestOptions)
 }
+const controlDeskLights = async (kind = 'SET_RED', args, res) => 
+    controlDevice(kind, args, res, deskLights, 'Desk Lights')
+const controlBedLights = async (kind = 'SET_RED', args, res) => 
+    controlDevice(kind, args, res, bedLights, 'Bed Lights')
 
-const controlDeskLights = async (kind = 'SET_RED', args, res) => {
+
+const controlDevice = async (kind = 'SET_RED', args, res, device, deviceName) => {
     if (kind.includes('SET_SCENE')) {
         const sceneId = kind.replace('SET_SCENE_', '')
         const numericalSceneId = parseInt(sceneId)
-        setScene(numericalSceneId)
+        setScene(device, numericalSceneId)
         const foundScene = lightScenes.find(item=> item.value.id === numericalSceneId)
-        console.log({foundScene})
-        return sendResponse(res, `✅ Set Micah\'s Desk Lights to \`${foundScene?.name || 'Scene'}\``)
+        return sendResponse(res, `✅ Set Micah\'s ${deviceName} to \`${foundScene?.name || 'Scene'}\``)
     }
     switch (kind) {
         case 'SET_RED':
-            setColor({ r: 255, g: 0, b: 0 })
-            sendResponse(res, `✅ Set Micah\'s Desk Lights to Red`)
+            setColor(device, { r: 255, g: 0, b: 0 })
+            sendResponse(res, `✅ Set Micah\'s ${deviceName} to Red`)
             break;
         case 'SET_GREEN':
-            setColor({ r: 0, g: 255, b: 0 })
-            sendResponse(res, `✅ Set Micah\'s Desk Lights to Green`)
+            setColor(device, { r: 0, g: 255, b: 0 })
+            sendResponse(res, `✅ Set Micah\'s ${deviceName} to Green`)
             break;
         case 'SET_BLUE':
-            setColor({ r: 0, g: 0, b: 255 })
-            sendResponse(res, `✅ Set Micah\'s Desk Lights to Blue`)
+            setColor(device, { r: 0, g: 0, b: 255 })
+            sendResponse(res, `✅ Set Micah\'s ${deviceName} to Blue`)
             break;
         case 'SET_YELLOW':
-            setColor({ r: 255, g: 255, b: 0 })
-            sendResponse(res, `✅ Set Micah\'s Desk Lights to Yellow`)
+            setColor(device, { r: 255, g: 255, b: 0 })
+            sendResponse(res, `✅ Set Micah\'s ${deviceName} to Yellow`)
             break;
         case 'SET_PURPLE':
-            setColor({ r: 128, g: 0, b: 128 })
-            sendResponse(res, `✅ Set Micah\'s Desk Lights to Purple`)
+            setColor(device, { r: 128, g: 0, b: 128 })
+            sendResponse(res, `✅ Set Micah\'s ${deviceName} to Purple`)
             break;
         case 'SET_CYAN':
-            setColor({ r: 0, g: 255, b: 255 })
-            sendResponse(res, `✅ Set Micah\'s Desk Lights to Cyan`)
+            setColor(device, { r: 0, g: 255, b: 255 })
+            sendResponse(res, `✅ Set Micah\'s ${deviceName} to Cyan`)
             break;
         case 'SET_ORANGE':
-            setColor({ r: 255, g: 165, b: 0 })
-            sendResponse(res, `✅ Set Micah\'s Desk Lights to Orange`)
+            setColor(device, { r: 255, g: 165, b: 0 })
+            sendResponse(res, `✅ Set Micah\'s ${deviceName} to Orange`)
             break;
         case 'SET_PINK':
-            setColor({ r: 255, g: 192, b: 203 })
-            sendResponse(res, `✅ Set Micah\'s Desk Lights to Pink`)
+            setColor(device, { r: 255, g: 192, b: 203 })
+            sendResponse(res, `✅ Set Micah\'s ${deviceName} to Pink`)
             break;
         case 'SET_TURQUOISE':
-            setColor({ r: 64, g: 224, b: 208 })
-            sendResponse(res, `✅ Set Micah\'s Desk Lights to Turquoise`)
+            setColor(device, { r: 64, g: 224, b: 208 })
+            sendResponse(res, `✅ Set Micah\'s ${deviceName} to Turquoise`)
             break;
         case 'SET_LAVENDER':
-            setColor({ r: 230, g: 230, b: 250 })
-            sendResponse(res, `✅ Set Micah\'s Desk Lights to Lavender`)
+            setColor(device, { r: 230, g: 230, b: 250 })
+            sendResponse(res, `✅ Set Micah\'s ${deviceName} to Lavender`)
             break;
         case 'POWER_ON':
-            changePowerState(true)
-            sendResponse(res, `✅ Turned on Micah\'s Desk Lights`)
+            changePowerState(device, true)
+            sendResponse(res, `✅ Turned on Micah\'s ${deviceName}`)
             break;
         case 'POWER_OFF':
-            changePowerState(false)
-            sendResponse(res, `✅ Turned off Micah\'s Desk Lights`)
+            changePowerState(device, false)
+            sendResponse(res, `✅ Turned off Micah\'s ${deviceName}`)
             break;
         case 'SET_BRIGHTNESS_HIGH':
-            setBrightness(100)
-            sendResponse(res, `✅ Set Brightness for Micah\'s Desk Lights to 100\%`)
+            setBrightness(device, 100)
+            sendResponse(res, `✅ Set Brightness for Micah\'s ${deviceName} to 100\%`)
             break;
         case 'SET_BRIGHTNESS_MED':
-            setBrightness(50)
-            sendResponse(res, `✅ Set Brightness for Micah\'s Desk Lights to 50\%`)
+            setBrightness(device, 50)
+            sendResponse(res, `✅ Set Brightness for Micah\'s ${deviceName} to 50\%`)
             break;
         case 'SET_BRIGHTNESS_LOW':
-            setBrightness(10)
-            sendResponse(res, `✅ Set Brightness for Micah\'s Desk Lights to 10\%`)
+            setBrightness(device, 10)
+            sendResponse(res, `✅ Set Brightness for Micah\'s ${deviceName} to 10\%`)
             break;
         case 'ALERT':
 
@@ -184,13 +196,13 @@ const controlDeskLights = async (kind = 'SET_RED', args, res) => {
 
             for (let intervalIndex = 0; intervalIndex < maxIterations; intervalIndex++) {
                 shouldPowerOn = !shouldPowerOn
-                const powerStateResponse = await changePowerState(shouldPowerOn)
+                const powerStateResponse = await changePowerState(device, shouldPowerOn)
                 const textResponse = await powerStateResponse.text()
                 console.log('powerstateresponse', textResponse, powerStateResponse.status, powerStateResponse.ok)
                 if (!powerStateResponse.ok) {
                     return sendResponse(res, `😢There was an error\n\n\`${textResponse}\``)
                 } else if (isFirstTime) {
-                    sendResponse(res, `✅ Alerting Micah by spamming his desk lights`)
+                    sendResponse(res, `✅ Alerting Micah by spamming his ${deviceName}`)
                     isFirstTime = false
                 }
                 await new Promise(r => setTimeout(r, 2000));
@@ -200,4 +212,4 @@ const controlDeskLights = async (kind = 'SET_RED', args, res) => {
     }
 }
 
-export { controlDeskLights }
+export { controlDeskLights,controlBedLights }

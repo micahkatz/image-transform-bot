@@ -128,10 +128,32 @@ const DESK_CONTROL = {
 
   ]
 };
+const BED_CONTROL = {
+  name: 'bed',
+  description: 'Control Micah\'s Bed Lights',
+  type: 1,
+  options: [
+    {
+      type: 3,
+      name: 'action',
+      description: 'Pick your action',
+      required: false,
+      choices: actionChoices
+    },
+    {
+      type: 3,
+      name: 'scene',
+      description: 'Pick your scene',
+      required: false,
+      choices: sceneChoices.slice(0, 24)
+    },
+
+  ]
+};
 
 
 
-const ALL_COMMANDS = [EFFECTS, DESK_CONTROL];
+const ALL_COMMANDS = [EFFECTS, DESK_CONTROL, BED_CONTROL];
 
 const setupSlashCommands = async () => {
   const response = await InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);
