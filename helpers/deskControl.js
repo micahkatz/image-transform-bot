@@ -2,6 +2,7 @@ import fetch from 'node-fetch'
 import secret from '../secret.json' assert { type: "json" };
 import { sendResponse } from '../utils.js'
 import lightScenes from '../constants/lightScenes.js'
+import moment from 'moment-timezone'
 const deskLights = secret.deskLights
 const bedLights = secret.bedLights
 
@@ -31,13 +32,7 @@ const setColor = async(device, { r, g, b }) => {
         redirect: 'follow'
     };
 
-    const response = await fetch("https://developer-api.govee.com/v1/devices/control", requestOptions)
-
-    if(!response.ok){
-        console.log('ERROR WITH SET COLOR', await response.text())
-    }
-
-    return response
+    return fetch("https://developer-api.govee.com/v1/devices/control", requestOptions)
 }
 const changePowerState = (device, shouldTurnOn = true) => {
     var myHeaders = new Headers();
@@ -113,11 +108,56 @@ const setScene = (device, sceneId) => {
 
     return fetch("https://openapi.api.govee.com/router/api/v1/device/control", requestOptions)
 }
+
+
+function isBetween845And930Weekday(dateTime) {
+    const isWeekday = dateTime.day() >= 1 && dateTime.day() <= 5; // Monday to Friday
+    const start = moment.tz('America/Chicago').set({ year: 2024, month: 4, date: 6,hour: 8, minute: 44, seconds:0 })
+    const end = moment.tz('America/Chicago').set({ year: 2024, month: 4, date: 6,hour: 9, minute: 30, seconds:0 })
+    const isBetween = dateTime.set({year: 2024, month: 4, date: 6}).isBetween(start,end);
+    console.log({isWeekday, isBetween, dateTime: dateTime.toLocaleString(), start: start.toLocaleString(), end: end.toLocaleString()})
+    return isWeekday && isBetween;
+}
+
 const controlDeskLights = async (kind = 'SET_RED', args, res) => 
     controlDevice(kind, args, res, deskLights, 'Desk Lights')
-const controlBedLights = async (kind = 'SET_RED', args, res) => 
-    controlDevice(kind, args, res, bedLights, 'Bed Lights')
+const controlBedLights = async (kind = 'SET_RED', args, res) => {
 
+    if (isBetween845And930Weekday(moment())) {
+        console.log("It's between 8:45 AM and 9:30 AM on a weekday.");
+        return await controlDevice(kind, args, res, bedLights, 'Bed Lights')
+    }
+    console.log("It's not between 8:45 AM and 9:30 AM on a weekday.");
+
+    return sendResponse(res, `❌ You can only change Micah\'s Bed Lights between 8:45 AM and 9:30 AM on a weekday 🥺🥺🥺`)
+
+}
+
+// // Test cases
+// const testCases = [
+//     // Saturday
+//     { dateTime: moment.tz({ year: 2024, month: 4, date: 4, hour: 8, minute: 44, second: 59 }, 'America/Chicago'), expected: false }, // May 4 at 8:44am
+//     { dateTime: moment.tz({ year: 2024, month: 4, date: 4, hour: 8, minute: 45 }, 'America/Chicago'), expected: false }, // May 4 at 8:45am
+//     { dateTime: moment.tz({ year: 2024, month: 4, date: 4, hour: 9, minute: 30 }, 'America/Chicago'), expected: false }, // May 4 at 9:30am
+//     { dateTime: moment.tz({ year: 2024, month: 4, date: 4, hour: 9, minute: 30, second: 1 }, 'America/Chicago'), expected: false }, // May 4 at 9:30:01am
+    
+//     // Sunday
+//     { dateTime: moment.tz({ year: 2024, month: 4, date: 5, hour: 8, minute: 45 }, 'America/Chicago'), expected: false }, // May 5 at 8:45am
+//     { dateTime: moment.tz({ year: 2024, month: 4, date: 5, hour: 9, minute: 30 }, 'America/Chicago'), expected: false }, // May 5 at 9:30am
+//     { dateTime: moment.tz({ year: 2024, month: 4, date: 5, hour: 9, minute: 30, second: 1 }, 'America/Chicago'), expected: false }, // May 5 at 9:30:01am
+    
+//     // Wednesday
+//     // { dateTime: moment.tz({ year: 2024, month: 4, date: 8, hour: 8, minute: 44, second: 59 }, 'America/Chicago'), expected: false }, // May 8 at 8:44am
+//     { dateTime: moment.tz({ year: 2024, month: 4, date: 8, hour: 8, minute: 45 }, 'America/Chicago'), expected: true }, // May 8 at 8:45am
+//     { dateTime: moment.tz({ year: 2024, month: 4, date: 8, hour: 9, minute: 15 }, 'America/Chicago'), expected: true }, // May 8 at 9:15am
+//     { dateTime: moment.tz({ year: 2024, month: 4, date: 8, hour: 9, minute: 30 }, 'America/Chicago'), expected: true }, // May 8 at 9:30am
+//     { dateTime: moment.tz({ year: 2024, month: 4, date: 8, hour: 9, minute: 30, second: 1 }, 'America/Chicago'), expected: false }, // May 8 at 9:30:01am
+// ]
+
+// testCases.forEach((testCase, index) => {
+//     const result = isBetween845And930Weekday(testCase.dateTime);
+//     console.log(`Test Case ${index + 1}: ${result === testCase.expected ? 'Passed' : 'Failed'}`);
+// });
 
 const controlDevice = async (kind = 'SET_RED', args, res, device, deviceName) => {
     if (kind.includes('SET_SCENE')) {
