@@ -151,9 +151,27 @@ const BED_CONTROL = {
   ]
 };
 
+const LEETCODE = {
+  name: 'lc',
+  description: 'Brag about doing an leetcode problem',
+  type: 1,
+  options: [
+    {
+      type: 3,
+      name: 'number',
+      description: 'Pick your number of leetcodes today',
+      required: true,
+      choices: 
+        [...Array(20).keys()].map(i => {return { name: (i + 1).toString(), value: (i + 1).toString()}}),
+    },
+  ]
+};
 
 
-const ALL_COMMANDS = [EFFECTS, DESK_CONTROL, BED_CONTROL];
+
+const ALL_COMMANDS = [EFFECTS, DESK_CONTROL, BED_CONTROL, 
+  LEETCODE
+];
 
 const setupSlashCommands = async () => {
   const response = await InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);

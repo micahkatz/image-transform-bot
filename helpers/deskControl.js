@@ -119,6 +119,32 @@ function isBetween845And930Weekday(dateTime) {
     return isWeekday && isBetween;
 }
 
+const leetCodeBrag = async (num, res) => {
+    const device = deskLights
+    var shouldPowerOn = true
+    const maxIterations = parseInt(num * 2)
+    var isFirstTime = true
+
+    setColor(device, { r: 0, g: 255, b: 0 })
+    await new Promise(r => setTimeout(r, 2000));
+
+
+
+    // for (let intervalIndex = 0; intervalIndex < maxIterations; intervalIndex++) {
+    //     shouldPowerOn = !shouldPowerOn
+    //     const powerStateResponse = await changePowerState(device, shouldPowerOn)
+    //     const textResponse = await powerStateResponse.text()
+    //     console.log('powerstateresponse', textResponse, powerStateResponse.status, powerStateResponse.ok)
+    //     if (!powerStateResponse.ok) {
+    //     //    return sendResponse(res, `😢There was an error\n\n\`${textResponse}\``)
+    //     } else if (isFirstTime) {
+    //         isFirstTime = false
+    //         // sendResponse( `✅ Bragged about doing ${num} LC problems today`)
+    //     }
+    //     await new Promise(r => setTimeout(r, 2000));
+    // }
+
+   }
 const controlDeskLights = async (kind = 'SET_RED', args, res) => 
     controlDevice(kind, args, res, deskLights, 'Desk Lights')
 const controlBedLights = async (kind = 'SET_RED', args, res) => {
@@ -252,4 +278,4 @@ const controlDevice = async (kind = 'SET_RED', args, res, device, deviceName) =>
     }
 }
 
-export { controlDeskLights,controlBedLights }
+export { controlDeskLights,controlBedLights, leetCodeBrag }

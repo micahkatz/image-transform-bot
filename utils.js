@@ -65,12 +65,17 @@ export function getRandomEmoji() {
 }
 
 export function sendResponse (res, content) {
-  res.send({
-  type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-  data: {
-    content,
-  },
-});
+  try {
+
+    res.send({
+    type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+    data: {
+      content,
+    },
+  });
+  } catch(err){
+    console.error('ERROR sending repsonse', err)
+  }
 }
 
 export async function sendImage(res, url, public_id) {

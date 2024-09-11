@@ -4,7 +4,11 @@ import {
   } from 'discord-interactions';
 import {sendResponse, GetChannelMessages, sendImage} from './utils.js'
 import {getAllAttachments, getEffect, uploadImage} from './helpers/imageTransformations.js'
-import {controlDeskLights, controlBedLights} from './helpers/deskControl.js'
+import {controlDeskLights, controlBedLights, leetCodeBrag} from './helpers/deskControl.js'
+
+import OpenAI from "openai";
+
+const openai = new OpenAI();
 export async function commandHandler({res, name: commandName, channel_id, options: args}){
     switch(commandName) {
         case 'image':
@@ -54,6 +58,18 @@ export async function commandHandler({res, name: commandName, channel_id, option
             // return sendResponse(res, 'this is a test from switch')
             break;
 
+        case 'lc':
+            console.log('LEETCODE COMMAND RUNNING', args)
+            const lcNum = args?.[0]?.value
+
+            let lcResponse = `✅ Bragged about doing \`${args?.[0]?.value}\` LC problems today`
+            if(lcNum){
+                lcResponse = await leetCodeBrag(lcNum, res)
+                return sendResponse(res,lcResponse)
+            } else {
+                return sendResponse(res,lcResponse)
+            }
+            break
         case 'desk':
             console.log('DESK COMMAND RUNNING', args)
             const action = args?.[0]?.value
@@ -76,6 +92,5 @@ export async function commandHandler({res, name: commandName, channel_id, option
                 return sendResponse(res,bedTextResposne)
             }
             break
-            // return 'success'
     }
 }
