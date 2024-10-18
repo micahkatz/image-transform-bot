@@ -10,7 +10,8 @@
   "scripts": {
     "start": "node app.js",
     "register": "node commands.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",    
+    "ngrok": "ngrok http --domain=civil-dear-ram.ngrok-free.app 3000"
   },
   "author": "Shay DeWael",
   "license": "MIT",
@@ -21,6 +22,7 @@
     "express": "^4.18.2",
     "moment": "^2.30.1",
     "moment-timezone": "^0.5.45",
+    "ngrok": "^5.0.0-beta.2",
     "node-fetch": "^3.3.2",
     "openai": "^4.44.0"
   },
