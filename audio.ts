@@ -128,60 +128,83 @@ export function initAudioBot() {
     });
     var connection = null;
     client.on('voiceStateUpdate', async (oldState, newState) => {
+        const botId = process.env.APP_ID;
+        if (newState.id === botId) {
+            return;
+        }
+
         const { guild } = newState;
-        const { guild: oldGuild } = oldState;
         const channelId = process.env.DISCORD_VC_ID;
         const messagesChannelId = process.env.DISCORD_MESSAGES_CHANNEL_ID;
         let voiceChannel = (await guild.channels.fetch(channelId, {
             force: true,
         })) as VoiceChannel;
-        let oldVoiceChannel = (await oldGuild.channels.fetch(
-            channelId
-        )) as VoiceChannel;
         let messagesChannel = (await guild.channels.fetch(messagesChannelId, {
             force: true,
         })) as TextChannel;
 
-        voiceChannel.members;
-        const membersThatAreNotBots = voiceChannel.members.filter(
-            (member) => !member.user.bot
-        );
-        const oldMembersThatAreNotBots = oldVoiceChannel.members.filter(
-            (member) => !member.user.bot
-        );
-        const numActiveInVoiceChannel = membersThatAreNotBots?.size || 0;
-        const oldNumActiveInVoiceChannel = oldMembersThatAreNotBots?.size || 0;
-        console.log('oldnumActiveInVoiceChannel', oldNumActiveInVoiceChannel);
-        console.log('numActiveInVoiceChannel', numActiveInVoiceChannel);
-        // TODO: add back
-        // if (numActiveInVoiceChannel === oldNumActiveInVoiceChannel) {
-        //     console.log('state has not changed');
-        //     return;
-        // }
-        if (numActiveInVoiceChannel === 1) {
-            try {
-                connection = await connectToChannel(voiceChannel);
-                // TODO: add back
-                // messagesChannel.send('BOT TEST MESSAGE');
+        if (oldState.channelId === null && newState.channelId) {
+            console.log('user has joined channel');
 
-                /**
-                 * We have successfully connected! Now we can subscribe our connection to
-                 * the player. This means that the player will play audio in the user's
-                 * voice channel.
-                 */
-                connection.subscribe(player);
-            } catch (error) {
-                /**
-                 * Unable to connect to the voice channel within 30 seconds :(
-                 */
-                console.error(error);
+            const membersThatAreNotBots = voiceChannel.members.filter(
+                (member) => !member.user.bot
+            );
+            const numActiveInVoiceChannel = membersThatAreNotBots?.size || 0;
+            console.log('numActiveInVoiceChannel', numActiveInVoiceChannel);
+            if (numActiveInVoiceChannel === 1) {
+                try {
+                    connection = await connectToChannel(voiceChannel);
+                    messagesChannel.send('@here 🎧A huddle has started🎧');
+
+                    /**
+                     * We have successfully connected! Now we can subscribe our connection to
+                     * the player. This means that the player will play audio in the user's
+                     * voice channel.
+                     */
+                    connection.subscribe(player);
+                } catch (error) {
+                    /**
+                     * Unable to connect to the voice channel within 30 seconds :(
+                     */
+                    console.error(error);
+                }
+            } else if (connection) {
+                try {
+                    player.stop();
+                    connection.destroy();
+                } catch (err) {
+                    console.log('Connection already destroyed');
+                }
             }
-        } else if (connection) {
-            try {
-                player.stop();
-                connection.destroy();
-            } catch (err) {
-                console.log('Connection already destroyed');
+        } else if (oldState.channelId && newState.channelId === null) {
+            console.log('user has left channel');
+            const membersThatAreNotBots = voiceChannel.members.filter(
+                (member) => !member.user.bot
+            );
+            const numActiveInVoiceChannel = membersThatAreNotBots?.size || 0;
+            if (numActiveInVoiceChannel === 1) {
+                try {
+                    connection = await connectToChannel(voiceChannel);
+
+                    /**
+                     * We have successfully connected! Now we can subscribe our connection to
+                     * the player. This means that the player will play audio in the user's
+                     * voice channel.
+                     */
+                    connection.subscribe(player);
+                } catch (error) {
+                    /**
+                     * Unable to connect to the voice channel within 30 seconds :(
+                     */
+                    console.error(error);
+                }
+            } else if (connection) {
+                try {
+                    player.stop();
+                    connection.destroy();
+                } catch (err) {
+                    console.log('Connection already destroyed');
+                }
             }
         }
     });
