@@ -9,7 +9,13 @@ import {
     joinVoiceChannel,
 } from '@discordjs/voice';
 import { GatewayIntentBits } from 'discord-api-types/v10';
-import { Client, Constants, VoiceBasedChannel } from 'discord.js';
+import {
+    Client,
+    Constants,
+    TextChannel,
+    VoiceBasedChannel,
+    VoiceChannel,
+} from 'discord.js';
 
 import { createDiscordJSAdapter } from './adapter.js';
 
@@ -126,14 +132,17 @@ export function initAudioBot() {
         const { guild: oldGuild } = oldState;
         const channelId = process.env.DISCORD_VC_ID;
         const messagesChannelId = process.env.DISCORD_MESSAGES_CHANNEL_ID;
-        let voiceChannel = await guild.channels.fetch(channelId, {
+        let voiceChannel = (await guild.channels.fetch(channelId, {
             force: true,
-        });
-        let oldVoiceChannel = await oldGuild.channels.fetch(channelId);
-        let messagesChannel = await guild.channels.fetch(messagesChannelId, {
+        })) as VoiceChannel;
+        let oldVoiceChannel = (await oldGuild.channels.fetch(
+            channelId
+        )) as VoiceChannel;
+        let messagesChannel = (await guild.channels.fetch(messagesChannelId, {
             force: true,
-        });
+        })) as TextChannel;
 
+        voiceChannel.members;
         const membersThatAreNotBots = voiceChannel.members.filter(
             (member) => !member.user.bot
         );
@@ -144,14 +153,16 @@ export function initAudioBot() {
         const oldNumActiveInVoiceChannel = oldMembersThatAreNotBots?.size || 0;
         console.log('oldnumActiveInVoiceChannel', oldNumActiveInVoiceChannel);
         console.log('numActiveInVoiceChannel', numActiveInVoiceChannel);
-        if (numActiveInVoiceChannel === oldNumActiveInVoiceChannel) {
-            console.log('state has not changed');
-            return;
-        }
+        // TODO: add back
+        // if (numActiveInVoiceChannel === oldNumActiveInVoiceChannel) {
+        //     console.log('state has not changed');
+        //     return;
+        // }
         if (numActiveInVoiceChannel === 1) {
             try {
                 connection = await connectToChannel(voiceChannel);
-                messagesChannel.send('BOT TEST MESSAGE');
+                // TODO: add back
+                // messagesChannel.send('BOT TEST MESSAGE');
 
                 /**
                  * We have successfully connected! Now we can subscribe our connection to

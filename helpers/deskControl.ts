@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import secret from '../secret';
+import secret from '../secret.json' assert { type: 'json' };
 import { sendResponse } from '../utils.js';
 import lightScenes from '../constants/lightScenes.js';
 import moment from 'moment-timezone';
@@ -25,17 +25,11 @@ const setColor = async (device, { r, g, b }) => {
         },
     });
 
-    var requestOptions = {
+    return fetch('https://developer-api.govee.com/v1/devices/control', {
         method: 'PUT',
         headers: myHeaders,
         body: raw,
-        redirect: 'follow',
-    };
-
-    return fetch(
-        'https://developer-api.govee.com/v1/devices/control',
-        requestOptions
-    );
+    });
 };
 const changePowerState = (device, shouldTurnOn = true) => {
     var myHeaders = new Headers();
@@ -51,17 +45,11 @@ const changePowerState = (device, shouldTurnOn = true) => {
         },
     });
 
-    var requestOptions = {
+    return fetch('https://developer-api.govee.com/v1/devices/control', {
         method: 'PUT',
         headers: myHeaders,
         body: raw,
-        redirect: 'follow',
-    };
-
-    return fetch(
-        'https://developer-api.govee.com/v1/devices/control',
-        requestOptions
-    );
+    });
 };
 const setBrightness = (device, brightness = 50) => {
     var myHeaders = new Headers();
@@ -77,17 +65,11 @@ const setBrightness = (device, brightness = 50) => {
         },
     });
 
-    var requestOptions = {
+    return fetch('https://developer-api.govee.com/v1/devices/control', {
         method: 'PUT',
         headers: myHeaders,
         body: raw,
-        redirect: 'follow',
-    };
-
-    return fetch(
-        'https://developer-api.govee.com/v1/devices/control',
-        requestOptions
-    );
+    });
 };
 const setScene = (device, sceneId) => {
     var myHeaders = new Headers();
@@ -107,41 +89,31 @@ const setScene = (device, sceneId) => {
         },
     });
 
-    var requestOptions = {
+    return fetch('https://openapi.api.govee.com/router/api/v1/device/control', {
         method: 'POST',
         headers: myHeaders,
         body: raw,
-        redirect: 'follow',
-    };
-
-    return fetch(
-        'https://openapi.api.govee.com/router/api/v1/device/control',
-        requestOptions
-    );
+    });
 };
 
 function isBetween845And930Weekday(dateTime) {
     const isWeekday = dateTime.day() >= 1 && dateTime.day() <= 5; // Monday to Friday
-    const start = moment
-        .tz('America/Chicago')
-        .set({
-            year: 2024,
-            month: 4,
-            date: 6,
-            hour: 8,
-            minute: 44,
-            seconds: 0,
-        });
-    const end = moment
-        .tz('America/Chicago')
-        .set({
-            year: 2024,
-            month: 4,
-            date: 6,
-            hour: 9,
-            minute: 30,
-            seconds: 0,
-        });
+    const start = moment.tz('America/Chicago').set({
+        year: 2024,
+        month: 4,
+        date: 6,
+        hour: 8,
+        minute: 44,
+        seconds: 0,
+    });
+    const end = moment.tz('America/Chicago').set({
+        year: 2024,
+        month: 4,
+        date: 6,
+        hour: 9,
+        minute: 30,
+        seconds: 0,
+    });
     const isBetween = dateTime
         .set({ year: 2024, month: 4, date: 6 })
         .isBetween(start, end);
@@ -157,9 +129,9 @@ function isBetween845And930Weekday(dateTime) {
 
 const leetCodeBrag = async (num, res) => {
     const device = deskLights;
-    var shouldPowerOn = true;
-    const maxIterations = parseInt(num * 2);
-    var isFirstTime = true;
+    // var shouldPowerOn = true
+    // const maxIterations = parseInt(num * 2)
+    // var isFirstTime = true
 
     setColor(device, { r: 0, g: 255, b: 0 });
     await new Promise((r) => setTimeout(r, 2000));
