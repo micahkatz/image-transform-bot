@@ -16,6 +16,7 @@ import {
     VoiceBasedChannel,
     VoiceChannel,
 } from 'discord.js';
+import { createReadStream } from 'fs';
 
 import { createDiscordJSAdapter } from './adapter.js';
 
@@ -35,8 +36,12 @@ function playSong() {
      */
     const randomSongNumber = Math.floor(Math.random() * 17) + 1; // Generate a random number between 1 and 17
 
+    // const resource = createAudioResource(createReadStream('./assets/slack-huddle-music.mp3'), {
+    //     inputType: StreamType.Raw,
+    // });
     const resource = createAudioResource(
-        `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${randomSongNumber}.mp3`,
+        // `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${randomSongNumber}.mp3`,
+        createReadStream('./assets/slack-huddle-music.mp3'),
         {
             inputType: StreamType.Arbitrary,
         }
@@ -154,7 +159,7 @@ export function initAudioBot() {
             if (numActiveInVoiceChannel === 1) {
                 try {
                     connection = await connectToChannel(voiceChannel);
-                    messagesChannel.send('@here 🎧A huddle has started🎧');
+                    messagesChannel.send('here 🎧A huddle has started🎧');
 
                     /**
                      * We have successfully connected! Now we can subscribe our connection to
