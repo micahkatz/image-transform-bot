@@ -159,7 +159,7 @@ export function initAudioBot() {
             if (numActiveInVoiceChannel === 1) {
                 try {
                     connection = await connectToChannel(voiceChannel);
-                    messagesChannel.send('@here 🎧A huddle has started🎧');
+                    messagesChannel.send('@everyone 🎧A huddle has started🎧');
 
                     /**
                      * We have successfully connected! Now we can subscribe our connection to
